@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from 'react-redux';
+import { Notify } from 'notiflix';
+import { addContact } from 'redux/contactsSlice';
+import { getContacts } from 'redux/selectors';
 import {
   AllForm,
   Label,
@@ -7,12 +10,14 @@ import {
   AddBtn,
 } from 'components/PhonebookForm/PhonebookForm.styled';
 
-export function PhonebookForm({ onSubmit }) {
+export function PhonebookForm() {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+  const contacts = useSelector(getContacts);
+  const dispatch = useDispatch();
 
   const handleChange = e => {
-    const { name, value } = e.currentTarget;
+    const { name, value } = e.target;
 
     switch (name) {
       case 'name':
@@ -30,12 +35,24 @@ export function PhonebookForm({ onSubmit }) {
   const handleSubmit = e => {
     e.preventDefault();
 
-    const { name, number } = e.target.elements;
+    const isAddedName = contacts.some(
+      contact => contact.name.toLowerCase() === name.toLowerCase()
+    );
 
-    if (onSubmit(name.value, number.value)) {
-      setName(name.value);
-      setNumber(number.value);
+    const isAddedNunber = contacts.some(contact => contact.number === number);
+
+    if (isAddedName) {
+      Notify.failure(`We have already had contact with name ${name}`);
+      return false;
+    } else if (isAddedNunber) {
+      Notify.failure(`We have already had contact with number ${number}`);
+      return false;
     }
+
+    const form = e.target.elements;
+    dispatch(addContact(form.name.value, form.number.value));
+    setName('');
+    setNumber('');
   };
 
   return (
@@ -72,7 +89,3 @@ export function PhonebookForm({ onSubmit }) {
     </AllForm>
   );
 }
-
-PhonebookForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-};

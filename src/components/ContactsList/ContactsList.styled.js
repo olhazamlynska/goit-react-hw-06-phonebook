@@ -7,3 +7,7 @@ export const ContactsListSTyle = styled.ul`
   justify-content: center;
   margin-bottom: ${p => p.theme.space[5]}px;
 `;
+
+export const Notification = styled.p`
+  color: ${p => p.theme.colors.accentColor};
+`;
